@@ -1,0 +1,226 @@
+import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Search, Bell, Menu, X, Music, Home, BarChart3, Grid3X3, Radio, Library, Heart, Clock, ListMusic } from "lucide-react";
+
+const drawerNavItems = [
+  { to: "/", icon: Home, label: "Home" },
+  { to: "/search", icon: Search, label: "Search" },
+  { to: "/tracks", icon: BarChart3, label: "Top Charts" },
+  { to: "/songs", icon: Grid3X3, label: "Categories" },
+  { to: "/radio", icon: Radio, label: "Radio" },
+  { to: "/library", icon: Library, label: "Your Library" },
+];
+
+const drawerLibraryItems = [
+  { icon: Heart, label: "Liked Songs" },
+  { icon: Clock, label: "Recently Played" },
+  { icon: ListMusic, label: "My Playlists" },
+];
+
+export default function Navbar() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [drawerOpen]);
+
+  const closeDrawer = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setDrawerOpen(false);
+      setClosing(false);
+    }, 250);
+  };
+
+  const handleNavClick = () => {
+    closeDrawer();
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
+
+  return (
+    <>
+      {/* Mobile Header */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 h-14 lg:hidden flex items-center justify-between px-4 border-b border-white/[0.06]"
+        style={{ background: "rgba(8,13,18,0.92)", backdropFilter: "blur(20px)" }}
+      >
+        <button
+          onClick={() => { setDrawerOpen(true); setClosing(false); }}
+          className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#5FD0B3] flex items-center justify-center">
+            <Music className="w-4 h-4 text-[#080D12]" />
+          </div>
+          <span className="font-display text-base font-bold">
+            <span className="text-white">Vibe</span>
+            <span className="text-[#5FD0B3]">Tune</span>
+          </span>
+        </div>
+
+        <button className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all relative">
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5FD0B3]" />
+        </button>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <div
+            className={`absolute inset-0 bg-black/60 ${closing ? "animate-fade-out" : "animate-fade-in"}`}
+            onClick={closeDrawer}
+          />
+          <nav
+            className={`absolute top-0 left-0 bottom-0 w-[80%] max-w-[320px] flex flex-col bg-[#0A0C11] border-r border-white/[0.06] shadow-2xl ${
+              closing ? "animate-slide-out-left" : "animate-slide-in-left"
+            }`}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#5FD0B3] flex items-center justify-center">
+                  <Music className="w-4 h-4 text-[#080D12]" />
+                </div>
+                <span className="font-display text-base font-bold">
+                  <span className="text-white">Vibe</span>
+                  <span className="text-[#5FD0B3]">Tune</span>
+                </span>
+              </div>
+              <button
+                onClick={closeDrawer}
+                className="p-2 rounded-xl text-[#5C6370] hover:text-white hover:bg-white/[0.06] transition-all"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-3 px-3">
+              <div className="space-y-0.5 mb-4">
+                {drawerNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? "bg-[#5FD0B3]/10 text-[#5FD0B3]"
+                          : "text-[#9CA3AF] hover:text-[#F0F2F5] hover:bg-white/[0.04]"
+                      }`
+                    }
+                  >
+                    <item.icon className="w-[18px] h-[18px]" />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+
+              <div className="mx-3 my-3 h-px bg-white/[0.06]" />
+
+              <div>
+                <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5C6370]">
+                  Your Music
+                </p>
+                <div className="space-y-0.5">
+                  {drawerLibraryItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={handleNavClick}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#9CA3AF] hover:text-[#F0F2F5] hover:bg-white/[0.04] transition-all duration-200 w-full text-left"
+                    >
+                      <item.icon className="w-[18px] h-[18px]" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-white/[0.06]">
+              <div
+                className="relative rounded-2xl overflow-hidden p-4"
+                style={{
+                  background: "linear-gradient(135deg, rgba(95,208,179,0.12), rgba(58,158,133,0.06))",
+                  border: "1px solid rgba(95,208,179,0.15)",
+                }}
+              >
+                <p className="text-sm font-display font-bold text-white mb-0.5">
+                  Good music.
+                </p>
+                <p className="text-sm font-display font-bold text-white mb-1">
+                  Great vibes.
+                </p>
+                <p className="text-[11px] text-[#9CA3AF] mb-3">
+                  Handpicked songs for every mood.
+                </p>
+                <button
+                  onClick={handleNavClick}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#5FD0B3] text-[#080D12] hover:brightness-110 transition-all duration-150 active:scale-95"
+                >
+                  Explore Now
+                </button>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Desktop Top Navigation */}
+      <header
+        className="hidden lg:flex fixed top-0 left-[260px] right-0 z-50 h-16 items-center justify-between px-8 border-b border-white/[0.06]"
+        style={{ background: "rgba(8,13,18,0.85)", backdropFilter: "blur(20px)" }}
+      >
+        <form onSubmit={handleSearch} className="flex-1 max-w-lg">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.12] focus-within:border-[#5FD0B3]/40 transition-all duration-200">
+            <Search className="w-4 h-4 text-[#5C6370]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search songs, artists, albums..."
+              className="bg-transparent text-sm text-white placeholder-[#5C6370] outline-none w-full"
+            />
+          </div>
+        </form>
+
+        <div className="flex items-center gap-3 ml-6">
+          <button className="p-2.5 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all relative">
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5FD0B3]" />
+          </button>
+          <div className="flex items-center gap-2.5 pl-3 border-l border-white/[0.08]">
+            <div className="w-8 h-8 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center text-[#5FD0B3] text-xs font-bold">
+              V
+            </div>
+            <div className="hidden xl:block">
+              <p className="text-sm font-medium text-white leading-none">Vibe Lover</p>
+            </div>
+            <svg className="w-4 h-4 text-[#5C6370]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+}
