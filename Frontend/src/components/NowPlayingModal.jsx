@@ -45,7 +45,7 @@ const NowPlayingModal = ({ onClose }) => {
   const progressPct = duration ? (progress / duration) * 100 : 0;
 
   const handleDownload = async () => {
-    const rawUrl = song.audioUrl || song.url;
+    const rawUrl = song.audioUrl || song.previewUrl || song.url;
     if (!rawUrl || downloading) return;
 
     setDownloading(true);
@@ -56,7 +56,7 @@ const NowPlayingModal = ({ onClose }) => {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = artist !== "Unknown Artist" ? `${songName} - ${artist}` : songName;
+      a.download = artist !== "Unknown Artist" ? `${songName} - ${artist}.mp4` : `${songName}.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

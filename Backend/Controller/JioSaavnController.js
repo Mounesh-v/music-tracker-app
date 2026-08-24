@@ -1,8 +1,27 @@
 import { SongService, AlbumService, ArtistService } from "jiosaavn-sdk";
+import forge from "node-forge";
 
 const songService = new SongService();
 const albumService = new AlbumService();
 const artistService = new ArtistService();
+
+// ── JioSaavn DES-ECB decryption (matches SDK internals) ──────────────
+const DES_KEY = "38346591";
+
+function decryptUrl(encryptedMediaUrl) {
+  if (!encryptedMediaUrl) return "";
+  try {
+    const encrypted = forge.util.decode64(encryptedMediaUrl);
+    const decipher = forge.cipher.createDecipher("DES-ECB", forge.util.createBuffer(DES_KEY));
+    decipher.start({ iv: forge.util.createBuffer("00000000") });
+    decipher.update(forge.util.createBuffer(encrypted));
+    decipher.finish();
+    return decipher.output.getBytes() || "";
+  } catch (err) {
+    console.error("decryptUrl failed:", err.message);
+    return encryptedMediaUrl;
+  }
+}
 
 // ── Direct JioSaavn API fetch (bypasses node-forge) ────────────────
 const JIO_API = "https://www.jiosaavn.com/api.php";
@@ -62,7 +81,7 @@ function normalizeRawSong(raw) {
     image: fixProtocol(imageUrl),
     duration,
     language: raw.language || "",
-    previewUrl: fixProtocol(raw.more_info?.encrypted_media_url || ""),
+    previewUrl: fixProtocol(decryptUrl(raw.more_info?.encrypted_media_url || "")),
     url: raw.perma_url || "",
     year: raw.year || "",
     playCount: raw.play_count ? Number(raw.play_count) : 0,

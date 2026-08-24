@@ -167,20 +167,20 @@ export const PlayerProvider = ({ children }) => {
       track?.preview_url ||
       null;
 
-    if (track?.downloadUrl) {
+    if (!raw && track?.downloadUrl) {
       if (typeof track.downloadUrl === "string") {
-        raw = raw || track.downloadUrl;
+        raw = track.downloadUrl;
       } else if (Array.isArray(track.downloadUrl)) {
-        const match = track.downloadUrl.find((d) => d.quality === "128kbps") || track.downloadUrl[0];
-        if (match?.url) raw = raw || match.url;
+        const match = track.downloadUrl.find((d) => d.quality === "128kbps" || d.quality === "96kbps") || track.downloadUrl[0];
+        if (match?.url) raw = match.url;
       } else if (track.downloadUrl.url) {
-        raw = raw || track.downloadUrl.url;
+        raw = track.downloadUrl.url;
       }
     }
 
     if (!raw) return null;
 
-    if (raw.includes("saavncdn.com") || raw.includes("jiosaavn.com")) {
+    if (raw.includes("saavncdn.com") || raw.includes("jiosaavn.com") || raw.includes("jjstudio")) {
       return `/api/music/proxy-audio?url=${encodeURIComponent(raw)}`;
     }
 
@@ -192,22 +192,21 @@ export const PlayerProvider = ({ children }) => {
     const src = getAudioUrl(track);
 
     if (!src) {
-      console.error("No playable audio URL found:", track);
+      console.error("No playable audio URL found for:", track?.title || track?.name || track);
       return;
     }
 
     audio.pause();
-    audio.currentTime = 0;
-    audio.src = src;
+    audio.removeAttribute("src");
     audio.load();
+    audio.src = src;
 
-    audio
-      .play()
+    audio.play()
       .then(() => {
         setIsPlaying(true);
       })
       .catch((error) => {
-        console.error("Audio playback failed:", error);
+        console.error("Audio playback failed:", error.message, "URL:", src);
         setIsPlaying(false);
       });
   }, []);
@@ -225,7 +224,10 @@ export const PlayerProvider = ({ children }) => {
     };
 
     const handleError = () => {
-      console.error("Audio error");
+      const audio = audioRef.current;
+      const errCode = audio.error?.code;
+      const errMsg = audio.error?.message;
+      console.error("Audio error:", { code: errCode, message: errMsg, src: audio.src });
       setIsPlaying(false);
     };
 
@@ -385,11 +387,13 @@ export const PlayerProvider = ({ children }) => {
   }, []);
 
   const togglePlay = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio.src || audio.error) return;
     if (isPlayingRef.current) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
+      audio
         .play()
         .then(() => setIsPlaying(true))
         .catch((error) => console.error("Resume failed:", error));

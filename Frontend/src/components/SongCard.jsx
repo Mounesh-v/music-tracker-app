@@ -1,8 +1,10 @@
-import { Play, Pause, Download } from "lucide-react";
+import { useState } from "react";
+import { Play, Pause, Download, Loader2 } from "lucide-react";
 import { usePlayer } from "../Context/PlayerContext";
 
 export default function SongCard({ song, queue = [] }) {
   const { play, currentTrack, isPlaying, togglePlay } = usePlayer();
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const isCurrentTrack = currentTrack?.id === song.id;
   const isCurrentlyPlaying = isCurrentTrack && isPlaying;
@@ -22,11 +24,10 @@ export default function SongCard({ song, queue = [] }) {
 
   const handleDownload = async (e) => {
     e.stopPropagation();
-    const rawUrl = song.audioUrl || song.url;
-    if (!rawUrl) return;
+    const rawUrl = song.audioUrl || song.previewUrl || song.url;
+    if (!rawUrl || isDownloading) return;
 
-    const btn = e.currentTarget;
-    btn.classList.add("animate-pulse");
+    setIsDownloading(true);
     try {
       const proxyUrl = `/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`;
       const res = await fetch(proxyUrl);
@@ -36,7 +37,7 @@ export default function SongCard({ song, queue = [] }) {
       a.href = blobUrl;
       const name = song.songName || song.title || song.name || "song";
       const artist = song.singer || song.artist || "";
-      a.download = artist ? `${name} - ${artist}` : name;
+      a.download = artist ? `${name} - ${artist}.mp4` : `${name}.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -44,7 +45,7 @@ export default function SongCard({ song, queue = [] }) {
     } catch {
       // silently fail
     } finally {
-      btn.classList.remove("animate-pulse");
+      setIsDownloading(false);
     }
   };
 
@@ -113,6 +114,7 @@ export default function SongCard({ song, queue = [] }) {
         <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200">
           <button
             onClick={handleDownload}
+            disabled={isDownloading}
             aria-label="Download"
             className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center"
             style={{
@@ -121,7 +123,11 @@ export default function SongCard({ song, queue = [] }) {
               color: "#FFFFFF",
             }}
           >
-            <Download className="w-4 h-4" />
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
           </button>
           <button
             onClick={handlePlay}
@@ -155,13 +161,18 @@ export default function SongCard({ song, queue = [] }) {
           {song.artist || song.singer || "Unknown Artist"}
         </p>
         <div className="flex items-center justify-between">
-          {(song.audioUrl || song.url) && (
+          {(song.audioUrl || song.previewUrl || song.url) && (
             <button
               onClick={handleDownload}
+              disabled={isDownloading}
               className="flex items-center gap-1.5 text-[11px] font-medium text-[#5FD0B3] hover:underline"
             >
-              <Download className="w-3 h-3" />
-              Download
+              {isDownloading ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Download className="w-3 h-3" />
+              )}
+              {isDownloading ? "Downloading..." : "Download"}
             </button>
           )}
         </div>

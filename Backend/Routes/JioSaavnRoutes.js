@@ -39,6 +39,7 @@ router.get("/proxy-audio", (req, res) => {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
           Referer: "https://www.jiosaavn.com/",
+          Origin: "https://www.jiosaavn.com",
         },
       },
       (proxyRes) => {
@@ -47,20 +48,84 @@ router.get("/proxy-audio", (req, res) => {
           proxyRes.statusCode < 400 &&
           proxyRes.headers.location
         ) {
-          res.redirect(proxyRes.headers.location);
+          const redirectUrl = new URL(proxyRes.headers.location, parsed.origin);
+          const followReq = https.get(
+            redirectUrl.href,
+            {
+              headers: {
+                "User-Agent":
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                Referer: "https://www.jiosaavn.com/",
+                Origin: "https://www.jiosaavn.com",
+              },
+            },
+            (followRes) => {
+              if (
+                followRes.statusCode >= 300 &&
+                followRes.statusCode < 400 &&
+                followRes.headers.location
+              ) {
+                const followReq2 = https.get(
+                  new URL(followRes.headers.location, redirectUrl.origin).href,
+                  {
+                    headers: {
+                      "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                      Referer: "https://www.jiosaavn.com/",
+                      Origin: "https://www.jiosaavn.com",
+                    },
+                  },
+                  (finalRes) => {
+                    res.set(
+                      "Content-Type",
+                      finalRes.headers["content-type"] || "audio/mpeg"
+                    );
+                    res.set("Accept-Ranges", "bytes");
+                    if (finalRes.headers["content-length"]) {
+                      res.set("Content-Length", finalRes.headers["content-length"]);
+                    }
+                    finalRes.pipe(res);
+                  }
+                );
+                followReq2.on("error", (err) => {
+                  console.error("Proxy follow2 error:", err.message);
+                  if (!res.headersSent) {
+                    res.status(502).json({ success: false, message: "Failed to proxy audio" });
+                  }
+                });
+                return;
+              }
+
+              res.set(
+                "Content-Type",
+                followRes.headers["content-type"] || "audio/mpeg"
+              );
+              res.set("Accept-Ranges", "bytes");
+              if (followRes.headers["content-length"]) {
+                res.set("Content-Length", followRes.headers["content-length"]);
+              }
+              followRes.pipe(res);
+            }
+          );
+          followReq.on("error", (err) => {
+            console.error("Proxy follow error:", err.message);
+            if (!res.headersSent) {
+              res.status(502).json({ success: false, message: "Failed to proxy audio" });
+            }
+          });
           return;
         }
 
         res.set(
           "Content-Type",
-          proxyRes.headers["content-type"] || "audio/mp4",
+          proxyRes.headers["content-type"] || "audio/mpeg"
         );
         res.set("Accept-Ranges", "bytes");
         if (proxyRes.headers["content-length"]) {
           res.set("Content-Length", proxyRes.headers["content-length"]);
         }
         proxyRes.pipe(res);
-      },
+      }
     );
 
     proxyReq.on("error", (err) => {

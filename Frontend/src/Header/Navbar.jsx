@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import {
-  Search,
-  Bell,
   Menu,
   X,
   Music,
@@ -15,6 +13,7 @@ import {
   Clock,
   ListMusic,
   LogIn,
+  Search
 } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 
@@ -36,8 +35,6 @@ const drawerLibraryItems = [
 export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [closing, setClosing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || "";

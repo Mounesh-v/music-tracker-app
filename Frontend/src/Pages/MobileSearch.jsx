@@ -121,7 +121,7 @@ export default function MobileSearch() {
       a.href = blobUrl;
       const name = song.songName || song.title || song.name || "song";
       const artist = song.singer || song.artist || "";
-      a.download = artist ? `${name} - ${artist}` : name;
+      a.download = artist ? `${name} - ${artist}.mp4` : `${name}.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
