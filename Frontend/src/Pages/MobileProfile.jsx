@@ -22,7 +22,7 @@ const SETTINGS = [
   { icon: HelpCircle, label: "Help & Support" },
 ];
 
-export default function Profile() {
+export default function MobileProfile() {
   const { user, logout } = useAuth();
 
   return (

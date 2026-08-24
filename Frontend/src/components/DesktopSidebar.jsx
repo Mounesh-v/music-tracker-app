@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { usePlayer } from "../Context/PlayerContext";
+import { useAuth } from "../Context/AuthContext";
 import { Home, Search, BarChart3, Grid3X3, Radio, Library, Heart, Clock, ListMusic, Music } from "lucide-react";
 
 const PROMO_IMAGE = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80";
@@ -28,9 +29,10 @@ const linkClass = ({ isActive }) =>
 
 export default function DesktopSidebar() {
   const { recentlyPlayed } = usePlayer();
+  const { user } = useAuth();
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 bg-[#0A0C11] border-r border-white/[0.06] overflow-y-auto">
+    <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 bg-[#0A0C11] border-r border-white/[0.06] overflow-y-auto scrollbar-hide">
       <div className="p-6 pb-4">
         <div className="flex items-center gap-2.5 mb-1">
           <div className="w-9 h-9 rounded-xl bg-[#5FD0B3] flex items-center justify-center">
@@ -46,7 +48,7 @@ export default function DesktopSidebar() {
         </p>
       </div>
 
-      <nav className="px-3 space-y-0.5">
+      <nav className="px-4 space-y-0.5">
         {navItems.map((item) => (
           <NavLink key={item.to} to={item.to} className={linkClass}>
             <item.icon className="w-[18px] h-[18px]" />
@@ -55,9 +57,9 @@ export default function DesktopSidebar() {
         ))}
       </nav>
 
-      <div className="mx-6 my-4 h-px bg-white/[0.06]" />
+      <div className="mx-5 my-4 h-px bg-white/[0.06]" />
 
-      <div className="px-3">
+      <div className="px-4">
         <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5C6370]">
           Your Music
         </p>
@@ -74,10 +76,10 @@ export default function DesktopSidebar() {
         </div>
       </div>
 
-      <div className="mx-6 my-4 h-px bg-white/[0.06]" />
+      <div className="mx-5 my-4 h-px bg-white/[0.06]" />
 
-      {recentlyPlayed.length > 0 && (
-        <div className="px-3 mb-4">
+      {user && recentlyPlayed.length > 0 && (
+        <div className="px-4 mb-4">
           <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#5C6370]">
             Recently Played
           </p>

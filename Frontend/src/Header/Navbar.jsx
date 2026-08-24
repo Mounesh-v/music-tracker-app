@@ -1,6 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Search, Bell, Menu, X, Music, Home, BarChart3, Grid3X3, Radio, Library, Heart, Clock, ListMusic } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Menu,
+  X,
+  Music,
+  Home,
+  BarChart3,
+  Grid3X3,
+  Radio,
+  Library,
+  Heart,
+  Clock,
+  ListMusic,
+  LogIn,
+} from "lucide-react";
+import { useAuth } from "../Context/AuthContext";
 
 const drawerNavItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -22,6 +38,10 @@ export default function Navbar() {
   const [closing, setClosing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "";
+  const userName = user?.name || "";
 
   useEffect(() => {
     if (drawerOpen) {
@@ -29,7 +49,9 @@ export default function Navbar() {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [drawerOpen]);
 
   const closeDrawer = () => {
@@ -44,30 +66,32 @@ export default function Navbar() {
     closeDrawer();
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
-
   return (
     <>
       {/* Mobile Header */}
       <header
         className="fixed top-0 left-0 right-0 z-50 h-14 lg:hidden flex items-center justify-between px-4 border-b border-white/[0.06]"
-        style={{ background: "rgba(8,13,18,0.92)", backdropFilter: "blur(20px)" }}
+        style={{
+          background: "rgba(8,13,18,0.92)",
+          backdropFilter: "blur(20px)",
+        }}
       >
-        <button
-          onClick={() => { setDrawerOpen(true); setClosing(false); }}
-          className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        {user ? (
+          <button
+            onClick={() => {
+              setDrawerOpen(true);
+              setClosing(false);
+            }}
+            className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        ) : (
+          <div className="w-9" />
+        )}
 
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#5FD0B3] flex items-center justify-center">
             <Music className="w-4 h-4 text-[#080D12]" />
           </div>
@@ -75,16 +99,28 @@ export default function Navbar() {
             <span className="text-white">Vibe</span>
             <span className="text-[#5FD0B3]">Tune</span>
           </span>
-        </div>
+        </Link>
 
-        <button className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5FD0B3]" />
-        </button>
+        {user ? (
+          <Link
+            to="/m/profile"
+            className="w-8 h-8 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center text-[#5FD0B3] text-xs font-bold"
+          >
+            {userInitial}
+          </Link>
+        ) : (
+          <Link
+            to="/login"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-[#5FD0B3] text-[#080D12]"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Login
+          </Link>
+        )}
       </header>
 
-      {/* Mobile Drawer Overlay */}
-      {drawerOpen && (
+      {/* Mobile Drawer */}
+      {drawerOpen && user && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div
             className={`absolute inset-0 bg-black/60 ${closing ? "animate-fade-out" : "animate-fade-in"}`}
@@ -160,7 +196,8 @@ export default function Navbar() {
               <div
                 className="relative rounded-2xl overflow-hidden p-4"
                 style={{
-                  background: "linear-gradient(135deg, rgba(95,208,179,0.12), rgba(58,158,133,0.06))",
+                  background:
+                    "linear-gradient(135deg, rgba(95,208,179,0.12), rgba(58,158,133,0.06))",
                   border: "1px solid rgba(95,208,179,0.15)",
                 }}
               >
@@ -187,38 +224,62 @@ export default function Navbar() {
 
       {/* Desktop Top Navigation */}
       <header
-        className="hidden lg:flex fixed top-0 left-[260px] right-0 z-50 h-16 items-center justify-between px-8 border-b border-white/[0.06]"
-        style={{ background: "rgba(8,13,18,0.85)", backdropFilter: "blur(20px)" }}
+        className={`hidden lg:flex fixed top-0 right-0 z-50 h-16 items-center justify-between px-8 border-b border-white/[0.06] ${
+          user ? "left-[260px]" : "left-0"
+        }`}
+        style={{
+          background: "rgba(8,13,18,0.85)",
+          backdropFilter: "blur(20px)",
+        }}
       >
-        <form onSubmit={handleSearch} className="flex-1 max-w-lg">
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.12] focus-within:border-[#5FD0B3]/40 transition-all duration-200">
-            <Search className="w-4 h-4 text-[#5C6370]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search songs, artists, albums..."
-              className="bg-transparent text-sm text-white placeholder-[#5C6370] outline-none w-full"
-            />
-          </div>
-        </form>
-
-        <div className="flex items-center gap-3 ml-6">
-          <button className="p-2.5 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5FD0B3]" />
-          </button>
-          <div className="flex items-center gap-2.5 pl-3 border-l border-white/[0.08]">
-            <div className="w-8 h-8 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center text-[#5FD0B3] text-xs font-bold">
-              V
+        {!user && (
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#5FD0B3] flex items-center justify-center">
+              <Music className="w-5 h-5 text-[#080D12]" />
             </div>
-            <div className="hidden xl:block">
-              <p className="text-sm font-medium text-white leading-none">Vibe Lover</p>
-            </div>
-            <svg className="w-4 h-4 text-[#5C6370]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <span className="font-display text-lg font-bold tracking-tight">
+              <span className="text-white">Vibe</span>
+              <span className="text-[#5FD0B3]">Tune</span>
+            </span>
           </div>
+        )}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <Link
+              to="/profile"
+              className="flex items-center gap-2.5 pl-3 border-l border-white/[0.08] hover:opacity-80 transition-opacity"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center text-[#5FD0B3] text-xs font-bold">
+                {userInitial}
+              </div>
+              <div className="hidden xl:block">
+                <p className="text-sm font-medium text-white leading-none">
+                  {userName}
+                </p>
+              </div>
+              <svg
+                className="w-4 h-4 text-[#5C6370]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#5FD0B3] text-[#080D12] hover:brightness-110 active:scale-95 transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Login
+            </Link>
+          )}
         </div>
       </header>
     </>

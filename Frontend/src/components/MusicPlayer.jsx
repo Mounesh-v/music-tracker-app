@@ -78,19 +78,28 @@ export default function MusicPlayer() {
     <>
       {/* Mobile Mini Player */}
       <div
-        className="fixed bottom-14 left-0 right-0 z-40 lg:hidden border-t border-white/[0.06]"
-        style={{ background: "rgba(10,13,18,0.95)", backdropFilter: "blur(20px)" }}
+        className="fixed bottom-[68px] left-2 right-2 z-40 lg:hidden rounded-2xl border border-white/[0.06]"
+        style={{
+          background: "rgba(10,13,18,0.95)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.4), 0 4px 24px rgba(0,0,0,0.3)",
+        }}
       >
         <div
-          className="h-1 absolute top-0 left-0"
-          style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #5FD0B3, #3A9E85)" }}
-        />
+          className="h-1 absolute top-0 left-3 right-3 rounded-full overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #5FD0B3, #3A9E85)" }}
+          />
+        </div>
         <div
-          className="flex items-center gap-3 px-4 py-2.5 cursor-pointer"
+          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer"
           onClick={() => setShowModal(true)}
         >
           {image && (
-            <img src={image} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+            <img src={image} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
           )}
           <div className="min-w-0 flex-1">
             <p className="text-sm text-white font-medium truncate">{songName}</p>
@@ -106,6 +115,13 @@ export default function MusicPlayer() {
             ) : (
               <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
             )}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); stop(); }}
+            className="p-2 text-[#5C6370] hover:text-white transition-colors flex-shrink-0"
+            aria-label="Close player"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>

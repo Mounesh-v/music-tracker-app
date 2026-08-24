@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion as Motion } from "framer-motion";
 import Hero from "../components/Hero";
 import Tracklist from "../components/Tracklist";
@@ -28,7 +29,7 @@ const SongCardSkeleton = () => (
   </div>
 );
 
-const SectionHeader = ({ eyebrow, title, viewAll }) => (
+const SectionHeader = ({ eyebrow, title, viewAll, onViewAll }) => (
   <div className="flex items-end justify-between mb-4 md:mb-6">
     <div>
       {eyebrow && (
@@ -41,7 +42,10 @@ const SectionHeader = ({ eyebrow, title, viewAll }) => (
       </h2>
     </div>
     {viewAll && (
-      <button className="text-xs font-medium text-[#9CA3AF] hover:text-[#5FD0B3] transition-colors">
+      <button
+        onClick={onViewAll}
+        className="text-xs font-medium text-[#9CA3AF] hover:text-[#5FD0B3] transition-colors"
+      >
         View All
       </button>
     )}
@@ -50,16 +54,17 @@ const SectionHeader = ({ eyebrow, title, viewAll }) => (
 
 const Home = () => {
   const { recentlyPlayed } = usePlayer();
+  const navigate = useNavigate();
   const [trending, setTrending] = useState([]);
   const [trendingLoading, setTrendingLoading] = useState(true);
-  const [telugu, setTelugu] = useState([]);
-  const [teluguLoading, setTeluguLoading] = useState(true);
+  const [regionalSongs, setRegionalSongs] = useState([]);
+  const [regionalLoading, setRegionalLoading] = useState(true);
 
   useEffect(() => {
     const fetchTrending = async () => {
       try {
         setTrendingLoading(true);
-        const res = await api.get("/music/discover?category=Trending&limit=12");
+        const res = await api.get("/music/trending?limit=50");
         setTrending(res.data?.songs || []);
       } catch {
         setTrending([]);
@@ -71,18 +76,18 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const fetchTelugu = async () => {
+    const fetchRegional = async () => {
       try {
-        setTeluguLoading(true);
-        const res = await api.get("/music/discover?language=telugu&limit=12");
-        setTelugu(res.data?.songs || []);
+        setRegionalLoading(true);
+        const res = await api.get("/music/trending-by-language?limit=5");
+        setRegionalSongs(res.data?.languages || []);
       } catch {
-        setTelugu([]);
+        setRegionalSongs([]);
       } finally {
-        setTeluguLoading(false);
+        setRegionalLoading(false);
       }
     };
-    fetchTelugu();
+    fetchRegional();
   }, []);
 
   return (
@@ -122,7 +127,12 @@ const Home = () => {
         className="py-4 md:py-6 px-4 md:px-6 lg:px-8"
       >
         <div className="max-w-6xl mx-auto">
-          <SectionHeader eyebrow="Charts" title="Trending Now" viewAll />
+          <SectionHeader
+            eyebrow="Charts"
+            title="Trending Now"
+            viewAll
+            onViewAll={() => navigate("/view-all?title=Trending+Now&category=Trending")}
+          />
           {trendingLoading ? (
             <ScrollRow>
               {Array.from({ length: 6 }).map((_, i) => (
@@ -148,39 +158,45 @@ const Home = () => {
         </div>
       </Motion.section>
 
-      <Motion.section
-        variants={sectionFade}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
-        className="py-4 md:py-6 px-4 md:px-6 lg:px-8"
-      >
-        <div className="max-w-6xl mx-auto">
-          <SectionHeader eyebrow="Regional" title="Popular in Telugu" viewAll />
-          {teluguLoading ? (
-            <ScrollRow>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SongCardSkeleton key={i} />
-              ))}
-            </ScrollRow>
-          ) : telugu.length > 0 ? (
-            <ScrollRow>
-              {telugu.map((song, index) => (
-                <div
-                  key={song.id || `telugu-${index}`}
-                  className="shrink-0 w-[150px] md:w-[200px]"
-                >
-                  <SongCard song={song} queue={telugu} />
+      {regionalSongs.map(({ language, songs }) => {
+        const title = `Trending in ${language.charAt(0).toUpperCase() + language.slice(1)}`;
+        return (
+          <Motion.section
+            key={language}
+            variants={sectionFade}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            className="py-4 md:py-6 px-4 md:px-6 lg:px-8"
+          >
+            <div className="max-w-6xl mx-auto">
+              <SectionHeader
+                eyebrow="Regional Charts"
+                title={title}
+                viewAll
+                onViewAll={() => navigate(`/view-all?title=${encodeURIComponent(title)}&language=${language}`)}
+              />
+              {regionalLoading ? (
+                <ScrollRow>
+                  {[0, 1].map((index) => <SongCardSkeleton key={index} />)}
+                </ScrollRow>
+              ) : songs.length > 0 ? (
+                <ScrollRow>
+                  {songs.map((song, index) => (
+                    <div key={song.id || `${language}-${index}`} className="shrink-0 w-[150px] md:w-[200px]">
+                      <SongCard song={song} queue={songs} />
+                    </div>
+                  ))}
+                </ScrollRow>
+              ) : (
+                <div className="flex items-center justify-center min-h-[160px] rounded-2xl border border-white/[0.06] bg-[#15171E] text-[#5C6370] text-sm">
+                  No tracks available
                 </div>
-              ))}
-            </ScrollRow>
-          ) : (
-            <div className="flex items-center justify-center min-h-[160px] rounded-2xl border border-white/[0.06] bg-[#15171E] text-[#5C6370] text-sm">
-              No tracks available
+              )}
             </div>
-          )}
-        </div>
-      </Motion.section>
+          </Motion.section>
+        );
+      })}
 
       <Motion.div
         variants={sectionFade}

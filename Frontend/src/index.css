@@ -16,6 +16,8 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+   -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 #root {
@@ -174,8 +176,18 @@ body {
   scroll-snap-align: start;
 }
 
-::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*:not(.scrollbar-hide)::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -183,10 +195,35 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #5FD0B3;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #5FD0B3;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*:not(.scrollbar-hide) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+aside:not(.scrollbar-hide) {
+  scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+}
+
+aside:not(.scrollbar-hide)::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+aside:not(.scrollbar-hide)::-webkit-scrollbar-thumb:hover {
+  background: #5FD0B3;
 }

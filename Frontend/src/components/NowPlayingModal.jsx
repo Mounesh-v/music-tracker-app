@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { usePlayer } from "../Context/PlayerContext";
-import { X, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Heart } from "lucide-react";
+import { X, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Heart, Download } from "lucide-react";
 
 const NowPlayingModal = ({ onClose }) => {
+  const [downloading, setDownloading] = useState(false);
   const {
     currentTrack,
     isPlaying,
@@ -41,6 +43,30 @@ const NowPlayingModal = ({ onClose }) => {
   };
 
   const progressPct = duration ? (progress / duration) * 100 : 0;
+
+  const handleDownload = async () => {
+    const rawUrl = song.audioUrl || song.url;
+    if (!rawUrl || downloading) return;
+
+    setDownloading(true);
+    try {
+      const proxyUrl = `/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`;
+      const res = await fetch(proxyUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = artist !== "Unknown Artist" ? `${songName} - ${artist}` : songName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // silently fail
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div
@@ -131,9 +157,19 @@ const NowPlayingModal = ({ onClose }) => {
           </button>
         </div>
 
-        <button className="mt-6 p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
-          <Heart className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-4 mt-6">
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors disabled:opacity-50"
+            aria-label="Download"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+          <button className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
+            <Heart className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Desktop card layout */}
@@ -227,9 +263,19 @@ const NowPlayingModal = ({ onClose }) => {
             </button>
           </div>
 
-          <button className="mt-6 p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
-            <Heart className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-4 mt-6">
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors disabled:opacity-50"
+              aria-label="Download"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+            <button className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
+              <Heart className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

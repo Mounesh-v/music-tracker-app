@@ -20,7 +20,7 @@ export default function Tracks() {
     const fetchTracks = async () => {
       try {
         setLoading(true);
-        const res = await api.get("/music/discover?category=Trending&limit=50");
+        const res = await api.get("/music/trending?limit=50");
         setTracks(res.data?.songs || []);
       } catch {
         setTracks([]);

@@ -5,6 +5,7 @@ import ConnectDb from "./Config/db.js";
 import router from "./Routes/UserRoutes.js";
 import AlbumRoute from "./Routes/AlbumRoute.js";
 import jioSaavnRoutes from "./Routes/JioSaavnRoutes.js";
+import { warmCatalog } from "./Controller/JioSaavnController.js";
 
 const app = express();
 dotenv.config();
@@ -22,8 +23,14 @@ app.use("/api/users", router);
 app.use("/api/albums", AlbumRoute);
 app.use("/api/music", jioSaavnRoutes);
 
-const port = 3000;
+warmCatalog();
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+const port = process.env.PORT || 3000;
+
+if (process.env.VERCEL !== "1") {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
+}
+
+export default app;

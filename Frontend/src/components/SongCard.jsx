@@ -1,4 +1,4 @@
-import { Play, Pause, MoreHorizontal } from "lucide-react";
+import { Play, Pause, Download } from "lucide-react";
 import { usePlayer } from "../Context/PlayerContext";
 
 export default function SongCard({ song, queue = [] }) {
@@ -17,6 +17,34 @@ export default function SongCard({ song, queue = [] }) {
       togglePlay();
     } else {
       play(song, queue);
+    }
+  };
+
+  const handleDownload = async (e) => {
+    e.stopPropagation();
+    const rawUrl = song.audioUrl || song.url;
+    if (!rawUrl) return;
+
+    const btn = e.currentTarget;
+    btn.classList.add("animate-pulse");
+    try {
+      const proxyUrl = `/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`;
+      const res = await fetch(proxyUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      const name = song.songName || song.title || song.name || "song";
+      const artist = song.singer || song.artist || "";
+      a.download = artist ? `${name} - ${artist}` : name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // silently fail
+    } finally {
+      btn.classList.remove("animate-pulse");
     }
   };
 
@@ -82,22 +110,36 @@ export default function SongCard({ song, queue = [] }) {
           </span>
         )}
 
-        <button
-          onClick={handlePlay}
-          aria-label={isCurrentlyPlaying ? "Pause" : "Play"}
-          className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0"
-          style={{
-            background: isCurrentlyPlaying ? "#5FD0B3" : "rgba(8,13,18,0.75)",
-            backdropFilter: "blur(8px)",
-            color: isCurrentlyPlaying ? "#080D12" : "#FFFFFF",
-          }}
-        >
-          {isCurrentlyPlaying ? (
-            <Pause className="w-4 h-4" fill="currentColor" />
-          ) : (
-            <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
-          )}
-        </button>
+        <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+          <button
+            onClick={handleDownload}
+            aria-label="Download"
+            className="w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(8,13,18,0.75)",
+              backdropFilter: "blur(8px)",
+              color: "#FFFFFF",
+            }}
+          >
+            <Download className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handlePlay}
+            aria-label={isCurrentlyPlaying ? "Pause" : "Play"}
+            className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center"
+            style={{
+              background: isCurrentlyPlaying ? "#5FD0B3" : "rgba(8,13,18,0.75)",
+              backdropFilter: "blur(8px)",
+              color: isCurrentlyPlaying ? "#080D12" : "#FFFFFF",
+            }}
+          >
+            {isCurrentlyPlaying ? (
+              <Pause className="w-4 h-4" fill="currentColor" />
+            ) : (
+              <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="p-3 md:p-4">
@@ -113,25 +155,15 @@ export default function SongCard({ song, queue = [] }) {
           {song.artist || song.singer || "Unknown Artist"}
         </p>
         <div className="flex items-center justify-between">
-          {song.url ? (
-            <a
-              href={song.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-[11px] font-medium text-[#5FD0B3] hover:underline"
+          {(song.audioUrl || song.url) && (
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-1.5 text-[11px] font-medium text-[#5FD0B3] hover:underline"
             >
-              View Track
-            </a>
-          ) : (
-            <span />
+              <Download className="w-3 h-3" />
+              Download
+            </button>
           )}
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="p-1.5 rounded-lg text-[#5C6370] hover:text-white hover:bg-white/[0.06] transition-all"
-          >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </article>

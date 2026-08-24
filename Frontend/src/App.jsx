@@ -11,13 +11,21 @@ import Home from "./Pages/Home";
 import Songs from "./Pages/Songs";
 import Profile from "./Pages/Profile";
 import SearchPage from "./Pages/SearchPage";
+import ViewAll from "./Pages/ViewAll";
+import MobileSearch from "./Pages/MobileSearch";
+import MobileLibrary from "./Pages/MobileLibrary";
+import MobileProfile from "./Pages/MobileProfile";
+import NotFound from "./Pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MusicPlayer from "./components/MusicPlayer";
 import SplashScreen from "./components/SplashScreen";
+import { LoginPopupRenderer } from "./Context/LoginPopupContext";
 import { usePlayer } from "./Context/PlayerContext";
+import { useAuth } from "./Context/AuthContext";
 
 function AppContent() {
   const { currentTrack } = usePlayer();
+  const { user } = useAuth();
   const [splashDone, setSplashDone] = useState(false);
 
   const handleSplashComplete = useCallback(() => {
@@ -28,8 +36,8 @@ function AppContent() {
     <>
       {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
 
-      <div className="flex min-h-screen">
-        <DesktopSidebar />
+      <div className="flex min-h-screen scrollbar-hide overflow-y-auto">
+        {user && <DesktopSidebar />}
 
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
           <Navbar />
@@ -45,8 +53,13 @@ function AppContent() {
               <Route path="/login" element={<Login />} />
               <Route path="/songs" element={<ProtectedRoute><Songs /></ProtectedRoute>} />
               <Route path="/tracks" element={<ProtectedRoute><Tracks /></ProtectedRoute>} />
-              <Route path="/search" element={<SearchPage />} />
+              <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+              <Route path="/view-all" element={<ProtectedRoute><ViewAll /></ProtectedRoute>} />
+              <Route path="/m/search" element={<ProtectedRoute><MobileSearch /></ProtectedRoute>} />
+              <Route path="/m/library" element={<ProtectedRoute><MobileLibrary /></ProtectedRoute>} />
+              <Route path="/m/profile" element={<ProtectedRoute><MobileProfile /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </div>
@@ -54,6 +67,7 @@ function AppContent() {
 
       <BottomNavbar />
       <MusicPlayer />
+      <LoginPopupRenderer />
     </>
   );
 }

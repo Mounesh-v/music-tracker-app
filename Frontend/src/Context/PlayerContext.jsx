@@ -7,6 +7,7 @@ import {
   useEffect,
 } from "react";
 import api from "../Service/api";
+import { useLoginPopup } from "./LoginPopupContext";
 
 const PlayerContext = createContext(null);
 
@@ -67,6 +68,7 @@ function getTrackLanguage(track) {
 export const PlayerProvider = ({ children }) => {
   const audioRef = useRef(new Audio());
   const restoredRef = useRef(false);
+  const { openLogin } = useLoginPopup();
 
   const persisted = loadPersistedState();
   const [currentTrack, setCurrentTrack] = useState(persisted.currentTrack);
@@ -110,6 +112,20 @@ export const PlayerProvider = ({ children }) => {
   useEffect(() => {
     if (!currentTrack || restoredRef.current) return;
     restoredRef.current = true;
+
+    // Block restore if not logged in
+    try {
+      const stored = localStorage.getItem("user");
+      if (!stored) {
+        setCurrentTrack(null);
+        setProgress(0);
+        return;
+      }
+    } catch {
+      setCurrentTrack(null);
+      setProgress(0);
+      return;
+    }
 
     const audio = audioRef.current;
     const src = getAudioUrl(currentTrack);
@@ -319,6 +335,17 @@ export const PlayerProvider = ({ children }) => {
 
   const play = useCallback(
     (track, trackQueue = []) => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (!stored) {
+          openLogin("Vibe with your favorite songs — login to start listening.");
+          return;
+        }
+      } catch {
+        openLogin("Vibe with your favorite songs — login to start listening.");
+        return;
+      }
+
       const fullQueue = trackQueue.length > 0 ? trackQueue : [track];
 
       setCurrentTrack(track);
@@ -328,7 +355,7 @@ export const PlayerProvider = ({ children }) => {
       addToRecentlyPlayed(track);
       playTrack(track);
     },
-    [playTrack, addToRecentlyPlayed]
+    [playTrack, addToRecentlyPlayed, openLogin]
   );
 
   const pause = useCallback(() => {
