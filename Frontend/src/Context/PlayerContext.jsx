@@ -6,7 +6,7 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import api from "../Service/api";
+import api, { PROXY_AUDIO_URL } from "../Service/api";
 import { useLoginPopup } from "./LoginPopupContext";
 
 const PlayerContext = createContext(null);
@@ -178,10 +178,12 @@ export const PlayerProvider = ({ children }) => {
       }
     }
 
-    if (!raw) return null;
+    if (!raw || typeof raw !== "string") return null;
+
+    if (!raw.startsWith("http")) return null;
 
     if (raw.includes("saavncdn.com") || raw.includes("jiosaavn.com") || raw.includes("jjstudio")) {
-      return `/api/music/proxy-audio?url=${encodeURIComponent(raw)}`;
+      return `${PROXY_AUDIO_URL}?url=${encodeURIComponent(raw)}`;
     }
 
     return raw;

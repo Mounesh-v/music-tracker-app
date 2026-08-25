@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Play, Pause, Download, Loader2 } from "lucide-react";
 import { usePlayer } from "../Context/PlayerContext";
+import { PROXY_AUDIO_URL } from "../Service/api";
 
 export default function SongCard({ song, queue = [] }) {
   const { play, currentTrack, isPlaying, togglePlay } = usePlayer();
@@ -29,7 +30,7 @@ export default function SongCard({ song, queue = [] }) {
 
     setIsDownloading(true);
     try {
-      const proxyUrl = `/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`;
+      const proxyUrl = `${PROXY_AUDIO_URL}?url=${encodeURIComponent(rawUrl)}`;
       const res = await fetch(proxyUrl);
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);

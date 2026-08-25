@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePlayer } from "../Context/PlayerContext";
+import { PROXY_AUDIO_URL } from "../Service/api";
 import { X, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Heart, Download } from "lucide-react";
 
 const NowPlayingModal = ({ onClose }) => {
@@ -50,7 +51,7 @@ const NowPlayingModal = ({ onClose }) => {
 
     setDownloading(true);
     try {
-      const proxyUrl = `/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`;
+      const proxyUrl = `${PROXY_AUDIO_URL}?url=${encodeURIComponent(rawUrl)}`;
       const res = await fetch(proxyUrl);
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);

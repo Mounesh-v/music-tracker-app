@@ -4,6 +4,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
 });
 
+export const PROXY_AUDIO_URL = `${api.defaults.baseURL}/music/proxy-audio`;
+
 api.interceptors.request.use((config) => {
   const stored = localStorage.getItem("user");
   if (stored) {

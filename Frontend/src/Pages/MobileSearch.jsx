@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Search, SlidersHorizontal, Mic, X, Music, Download, Play, Pause } from "lucide-react";
 import { usePlayer } from "../Context/PlayerContext";
-import api from "../Service/api";
+import api, { PROXY_AUDIO_URL } from "../Service/api";
 
 const STORAGE_KEY = "vibetune-recent-searches";
 
@@ -114,7 +114,7 @@ export default function MobileSearch() {
     const btn = e.currentTarget;
     btn.classList.add("animate-pulse");
     try {
-      const res = await fetch(`/api/music/proxy-audio?url=${encodeURIComponent(rawUrl)}`);
+      const res = await fetch(`${PROXY_AUDIO_URL}?url=${encodeURIComponent(rawUrl)}`);
       const blob = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
