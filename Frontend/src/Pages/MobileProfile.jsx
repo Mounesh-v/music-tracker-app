@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Bell,
   Settings,
@@ -5,25 +6,34 @@ import {
   Crown,
   ChevronRight,
   Shield,
-  Download,
-  Play,
-  BellRing,
   HelpCircle,
   LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import { getLikedSongs } from "../Service/songApi";
 
 const SETTINGS = [
-  { icon: User, label: "Account" },
-  { icon: Play, label: "Playback" },
-  { icon: Download, label: "Downloads" },
-  { icon: Shield, label: "Privacy" },
-  { icon: BellRing, label: "Notifications" },
-  { icon: HelpCircle, label: "Help & Support" },
+  { icon: Shield, label: "Privacy", route: "/privacy" },
+  { icon: HelpCircle, label: "Help & Support", route: "/help-support" },
 ];
 
 export default function MobileProfile() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [likedCount, setLikedCount] = useState(0);
+
+  useEffect(() => {
+    const fetchLikedCount = async () => {
+      try {
+        const data = await getLikedSongs();
+        setLikedCount((data.likedSongs || []).length);
+      } catch (error) {
+        console.error("Error fetching liked songs:", error);
+      }
+    };
+    fetchLikedCount();
+  }, []);
 
   return (
     <div className="min-h-screen pb-40">
@@ -48,14 +58,25 @@ export default function MobileProfile() {
           style={{ background: "#11131A" }}
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center flex-shrink-0">
-              <User className="w-8 h-8 text-[#5FD0B3]" />
-            </div>
+            {user?.profileImage ? (
+              <img
+                src={user.profileImage}
+                alt=""
+                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#5FD0B3]/15 flex items-center justify-center flex-shrink-0">
+                <User className="w-8 h-8 text-[#5FD0B3]" />
+              </div>
+            )}
             <div className="min-w-0">
               <h2 className="text-lg font-display font-bold text-white truncate">
-                {user?.name || "Vibe Lover"}
+                {user?.name || "User"}
               </h2>
-              <p className="text-sm text-[#5C6370] truncate">{user?.email || "user@vibetune.com"}</p>
+              <p className="text-sm text-[#5C6370] truncate">{user?.email || ""}</p>
+              {user?.bio && (
+                <p className="text-xs text-[#9CA3AF] truncate mt-0.5">{user.bio}</p>
+              )}
             </div>
           </div>
           <button className="w-full py-2.5 rounded-xl text-xs font-semibold border border-[#5FD0B3]/30 text-[#5FD0B3] hover:bg-[#5FD0B3]/10 transition-all">
@@ -66,18 +87,11 @@ export default function MobileProfile() {
 
       {/* Stats */}
       <div className="px-4 mb-5">
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: "Playlists", value: 12 },
-            { label: "Liked", value: 124 },
-            { label: "Following", value: 48 },
-            { label: "Followers", value: 312 },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p className="text-lg font-display font-bold text-[#5FD0B3]">{stat.value}</p>
-              <p className="text-[10px] text-[#5C6370]">{stat.label}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center rounded-2xl p-3 border border-white/[0.06]" style={{ background: "#11131A" }}>
+            <p className="text-lg font-display font-bold text-[#5FD0B3]">{likedCount}</p>
+            <p className="text-[10px] text-[#5C6370]">Liked Songs</p>
+          </div>
         </div>
       </div>
 
@@ -114,7 +128,10 @@ export default function MobileProfile() {
           {SETTINGS.map((item, i) => (
             <div key={item.label}>
               {i > 0 && <div className="h-px bg-white/[0.04] ml-14" />}
-              <button className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition-colors">
+              <button
+                onClick={() => item.route && navigate(item.route)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.02] transition-colors"
+              >
                 <div className="w-8 h-8 rounded-lg bg-[#1A2129] flex items-center justify-center flex-shrink-0">
                   <item.icon className="w-4 h-4 text-[#5C6370]" />
                 </div>

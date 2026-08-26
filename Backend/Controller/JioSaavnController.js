@@ -633,6 +633,39 @@ export const getSongById = async (req, res) => {
   }
 };
 
+export const getSongsByIds = async (req, res) => {
+  try {
+    const { ids } = req.query;
+
+    if (!ids) {
+      return res.status(400).json({
+        success: false,
+        message: "ids query param is required (comma-separated)",
+      });
+    }
+
+    const idList = ids.split(",").map((s) => s.trim()).filter(Boolean);
+
+    if (idList.length === 0) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const songs = await songService.getSongByIds({ songIds: idList.join(",") });
+
+    res.status(200).json({
+      success: true,
+      data: songs.map(normalizeSong).filter(Boolean),
+    });
+  } catch (error) {
+    console.error("JioSaavn getSongsByIds error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get songs",
+      error: error.message,
+    });
+  }
+};
+
 export const getAlbumById = async (req, res) => {
   try {
     const { id } = req.params;

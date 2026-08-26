@@ -138,3 +138,75 @@ export const validateToken = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const likedSongs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { songId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $addToSet: {
+          likedSongs: songId,
+        },
+      },
+      { new: true },
+    );
+    res.status(200).json({
+      success: true,
+      message: "Song added to liked songs",
+      likedSongs: user.likedSongs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getLikedSongs = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      likedSongs: user.likedSongs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const unlikeSong = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { songId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: {
+          likedSongs: songId,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Song removed from liked songs",
+      likedSongs: user.likedSongs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

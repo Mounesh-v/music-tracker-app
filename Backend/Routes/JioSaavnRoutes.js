@@ -6,6 +6,7 @@ import {
   getTrendingByLanguage,
   searchSongs,
   getSongById,
+  getSongsByIds,
   getAlbumById,
   getArtistById,
 } from "../Controller/JioSaavnController.js";
@@ -17,6 +18,7 @@ router.get("/trending", getTrendingSongs);
 router.get("/trending-by-language", getTrendingByLanguage);
 router.get("/search", searchSongs);
 router.get("/song/:id", getSongById);
+router.get("/songs", getSongsByIds);
 router.get("/album/:id", getAlbumById);
 router.get("/artist/:id", getArtistById);
 

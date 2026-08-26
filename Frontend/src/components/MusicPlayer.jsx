@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePlayer } from "../Context/PlayerContext";
 import NowPlayingModal from "./NowPlayingModal";
+import { likeSong, unlikeSong, getLikedSongs } from "../Service/songApi";
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, X, Volume2, ListMusic, Heart } from "lucide-react";
 
 export default function MusicPlayer() {
@@ -23,6 +24,7 @@ export default function MusicPlayer() {
   } = usePlayer();
 
   const [showModal, setShowModal] = useState(false);
+  const [likedSongs, setLikedSongs] = useState([]);
   const volumeRef = useRef(null);
   const isDraggingVolume = useRef(false);
 
@@ -55,6 +57,38 @@ export default function MusicPlayer() {
     isDraggingVolume.current = true;
     changeVolume(getVolumeFromEvent(e));
   }, [changeVolume, getVolumeFromEvent]);
+
+  useEffect(() => {
+    const fetchLikedSongs = async () => {
+      try {
+        const data = await getLikedSongs();
+        setLikedSongs(data.likedSongs);
+      } catch (error) {
+        console.error("Error fetching liked songs:", error);
+      }
+    };
+    fetchLikedSongs();
+  }, []);
+
+  const handleLikeSong = async () => {
+    if (!currentTrack) return;
+    try {
+      const songId = currentTrack.id;
+      const isLiked = likedSongs.includes(songId);
+
+      if (isLiked) {
+        await unlikeSong(songId);
+        setLikedSongs((prev) => prev.filter((id) => id !== songId));
+      } else {
+        await likeSong(songId);
+        setLikedSongs((prev) => [...prev, songId]);
+      }
+    } catch (error) {
+      console.error("Error updating liked song:", error);
+    }
+  };
+
+  const isCurrentTrackLiked = currentTrack && likedSongs.includes(currentTrack.id);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -167,10 +201,11 @@ export default function MusicPlayer() {
                 <p className="text-[11px] text-[#9CA3AF] truncate">{artist}</p>
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); }}
-                className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors hidden sm:block"
+                onClick={(e) => { e.stopPropagation(); handleLikeSong(); }}
+                className={`p-2 transition-colors hidden sm:block ${isCurrentTrackLiked ? "text-red-500" : "text-[#5C6370] hover:text-[#5FD0B3]"}`}
+                aria-label="Like song"
               >
-                <Heart className="w-4 h-4" />
+                <Heart className="w-4 h-4" fill={isCurrentTrackLiked ? "currentColor" : "none"} />
               </button>
             </div>
 

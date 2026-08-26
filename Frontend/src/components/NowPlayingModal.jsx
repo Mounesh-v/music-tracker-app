@@ -1,10 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePlayer } from "../Context/PlayerContext";
 import { PROXY_AUDIO_URL } from "../Service/api";
-import { X, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Heart, Download } from "lucide-react";
+import { likeSong,
+  unlikeSong,
+  getLikedSongs, } from "../Service/songApi";
+import {
+  X,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Shuffle,
+  Repeat,
+  Repeat1,
+  Heart,
+  Download,
+} from "lucide-react";
 
 const NowPlayingModal = ({ onClose }) => {
   const [downloading, setDownloading] = useState(false);
+
+  const [likedSongs, setLikedSongs] = useState([]);
   const {
     currentTrack,
     isPlaying,
@@ -57,7 +73,10 @@ const NowPlayingModal = ({ onClose }) => {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = artist !== "Unknown Artist" ? `${songName} - ${artist}.mp4` : `${songName}.mp4`;
+      a.download =
+        artist !== "Unknown Artist"
+          ? `${songName} - ${artist}.mp4`
+          : `${songName}.mp4`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -66,6 +85,37 @@ const NowPlayingModal = ({ onClose }) => {
       // silently fail
     } finally {
       setDownloading(false);
+    }
+  };
+  useEffect(() => {
+    const fetchLikedSongs = async () => {
+      try {
+        const data = await getLikedSongs();
+
+        setLikedSongs(data.likedSongs);
+      } catch (error) {
+        console.error("Error fetching liked songs:", error);
+      }
+    };
+
+    fetchLikedSongs();
+  }, []);
+
+  const handleLikeSong = async (songId) => {
+    try {
+      const isLiked = likedSongs.includes(songId);
+
+      if (isLiked) {
+        await unlikeSong(songId);
+
+        setLikedSongs((prev) => prev.filter((id) => id !== songId));
+      } else {
+        await likeSong(songId);
+
+        setLikedSongs((prev) => [...prev, songId]);
+      }
+    } catch (error) {
+      console.error("Error updating liked song:", error);
     }
   };
 
@@ -106,17 +156,27 @@ const NowPlayingModal = ({ onClose }) => {
         >
           <div
             className="h-full rounded-full relative transition-all"
-            style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #5FD0B3, #3A9E85)" }}
+            style={{
+              width: `${progressPct}%`,
+              background: "linear-gradient(90deg, #5FD0B3, #3A9E85)",
+            }}
           >
             <div
               className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: "#5FD0B3", boxShadow: "0 0 8px rgba(95,208,179,0.5)" }}
+              style={{
+                background: "#5FD0B3",
+                boxShadow: "0 0 8px rgba(95,208,179,0.5)",
+              }}
             />
           </div>
         </div>
         <div className="flex justify-between w-full mb-6">
-          <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">{formatTime(progress)}</span>
-          <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">{formatTime(duration)}</span>
+          <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">
+            {formatTime(progress)}
+          </span>
+          <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">
+            {formatTime(duration)}
+          </span>
         </div>
 
         <div className="flex items-center gap-5">
@@ -128,7 +188,11 @@ const NowPlayingModal = ({ onClose }) => {
             <Shuffle className="w-5 h-5" />
           </button>
 
-          <button onClick={previous} className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl" aria-label="Previous">
+          <button
+            onClick={previous}
+            className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl"
+            aria-label="Previous"
+          >
             <SkipBack className="w-6 h-6" fill="currentColor" />
           </button>
 
@@ -145,7 +209,11 @@ const NowPlayingModal = ({ onClose }) => {
             )}
           </button>
 
-          <button onClick={next} className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl" aria-label="Next">
+          <button
+            onClick={next}
+            className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl"
+            aria-label="Next"
+          >
             <SkipForward className="w-6 h-6" fill="currentColor" />
           </button>
 
@@ -154,7 +222,11 @@ const NowPlayingModal = ({ onClose }) => {
             className={`p-2 rounded-xl transition-colors ${repeat !== "off" ? "text-[#5FD0B3]" : "text-[#5C6370] hover:text-white"}`}
             aria-label="Repeat"
           >
-            {repeat === "one" ? <Repeat1 className="w-5 h-5" /> : <Repeat className="w-5 h-5" />}
+            {repeat === "one" ? (
+              <Repeat1 className="w-5 h-5" />
+            ) : (
+              <Repeat className="w-5 h-5" />
+            )}
           </button>
         </div>
 
@@ -167,8 +239,19 @@ const NowPlayingModal = ({ onClose }) => {
           >
             <Download className="w-5 h-5" />
           </button>
-          <button className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
-            <Heart className="w-5 h-5" />
+          <button
+            onClick={() => handleLikeSong(song.id)}
+            className={`p-2 transition-colors ${
+              likedSongs.includes(song.id)
+                ? "text-red-500"
+                : "text-[#5C6370] hover:text-[#5FD0B3]"
+            }`}
+            aria-label="Like song"
+          >
+            <Heart
+              className="w-5 h-5"
+              fill={likedSongs.includes(song.id) ? "currentColor" : "none"}
+            />
           </button>
         </div>
       </div>
@@ -212,17 +295,27 @@ const NowPlayingModal = ({ onClose }) => {
           >
             <div
               className="h-full rounded-full relative transition-all"
-              style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #5FD0B3, #3A9E85)" }}
+              style={{
+                width: `${progressPct}%`,
+                background: "linear-gradient(90deg, #5FD0B3, #3A9E85)",
+              }}
             >
               <div
                 className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: "#5FD0B3", boxShadow: "0 0 8px rgba(95,208,179,0.5)" }}
+                style={{
+                  background: "#5FD0B3",
+                  boxShadow: "0 0 8px rgba(95,208,179,0.5)",
+                }}
               />
             </div>
           </div>
           <div className="flex justify-between w-full mb-6">
-            <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">{formatTime(progress)}</span>
-            <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">{formatTime(duration)}</span>
+            <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">
+              {formatTime(progress)}
+            </span>
+            <span className="font-mono text-[11px] text-[#5C6370] tabular-nums">
+              {formatTime(duration)}
+            </span>
           </div>
 
           <div className="flex items-center gap-5">
@@ -234,7 +327,11 @@ const NowPlayingModal = ({ onClose }) => {
               <Shuffle className="w-5 h-5" />
             </button>
 
-            <button onClick={previous} className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl" aria-label="Previous">
+            <button
+              onClick={previous}
+              className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl"
+              aria-label="Previous"
+            >
               <SkipBack className="w-6 h-6" fill="currentColor" />
             </button>
 
@@ -251,7 +348,11 @@ const NowPlayingModal = ({ onClose }) => {
               )}
             </button>
 
-            <button onClick={next} className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl" aria-label="Next">
+            <button
+              onClick={next}
+              className="p-2 text-[#9CA3AF] hover:text-white transition-colors rounded-xl"
+              aria-label="Next"
+            >
               <SkipForward className="w-6 h-6" fill="currentColor" />
             </button>
 
@@ -260,7 +361,11 @@ const NowPlayingModal = ({ onClose }) => {
               className={`p-2 rounded-xl transition-colors ${repeat !== "off" ? "text-[#5FD0B3]" : "text-[#5C6370] hover:text-white"}`}
               aria-label="Repeat"
             >
-              {repeat === "one" ? <Repeat1 className="w-5 h-5" /> : <Repeat className="w-5 h-5" />}
+              {repeat === "one" ? (
+                <Repeat1 className="w-5 h-5" />
+              ) : (
+                <Repeat className="w-5 h-5" />
+              )}
             </button>
           </div>
 
@@ -273,8 +378,19 @@ const NowPlayingModal = ({ onClose }) => {
             >
               <Download className="w-5 h-5" />
             </button>
-            <button className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors">
-              <Heart className="w-5 h-5" />
+            <button
+              onClick={() => handleLikeSong(song.id)}
+              className={`p-2 transition-colors ${
+                likedSongs.includes(song.id)
+                  ? "text-red-500"
+                  : "text-[#5C6370] hover:text-[#5FD0B3]"
+              }`}
+              aria-label="Like song"
+            >
+              <Heart
+                className="w-5 h-5"
+                fill={likedSongs.includes(song.id) ? "currentColor" : "none"}
+              />
             </button>
           </div>
         </div>

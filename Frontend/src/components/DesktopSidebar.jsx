@@ -1,9 +1,21 @@
 import { NavLink } from "react-router-dom";
 import { usePlayer } from "../Context/PlayerContext";
 import { useAuth } from "../Context/AuthContext";
-import { Home, Search, BarChart3, Grid3X3, Radio, Library, Heart, Clock, ListMusic, Music } from "lucide-react";
+import {
+  Home,
+  Search,
+  BarChart3,
+  Grid3X3,
+  Radio,
+  Library,
+  Heart,
+  Clock,
+  ListMusic,
+  Music,
+} from "lucide-react";
 
-const PROMO_IMAGE = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80";
+const PROMO_IMAGE =
+  "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -11,13 +23,13 @@ const navItems = [
   { to: "/tracks", icon: BarChart3, label: "Top Charts" },
   { to: "/songs", icon: Grid3X3, label: "Categories" },
   { to: "/radio", icon: Radio, label: "Radio" },
-  { to: "/library", icon: Library, label: "Your Library" },
+  { to: "/m/library", icon: Library, label: "Your Library" },
 ];
 
 const libraryItems = [
-  { icon: Heart, label: "Liked Songs" },
-  { icon: Clock, label: "Recently Played" },
-  { icon: ListMusic, label: "My Playlists" },
+  { to: "/m/library/liked", icon: Heart, label: "Liked Songs" },
+  { to: "/m/library/albums", icon: ListMusic, label: "Albums" },
+  { to: "/m/library/singers", icon: Clock, label: "Singers" },
 ];
 
 const linkClass = ({ isActive }) =>
@@ -65,13 +77,10 @@ export default function DesktopSidebar() {
         </p>
         <div className="space-y-0.5">
           {libraryItems.map((item) => (
-            <button
-              key={item.label}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#9CA3AF] hover:text-[#F0F2F5] hover:bg-white/[0.04] transition-all duration-200 w-full text-left"
-            >
+            <NavLink key={item.to} to={item.to} className={linkClass}>
               <item.icon className="w-[18px] h-[18px]" />
               {item.label}
-            </button>
+            </NavLink>
           ))}
         </div>
       </div>

@@ -23,3 +23,25 @@ export const getArtistById = async (id, page = 1) => {
   );
   return res.data;
 };
+
+
+export const likeSong = async (songId) => {
+  const response = await api.post(`/users/like/${songId}`);
+  return response.data;
+};
+
+export const unlikeSong = async (songId) => {
+  const response = await api.delete(`/users/liked-songs/${songId}`);
+  return response.data;
+};
+
+export const getLikedSongs = async () => {
+  const response = await api.get("/users/liked-songs");
+  return response.data;
+};
+
+export const getSongsByIds = async (ids) => {
+  if (!ids || ids.length === 0) return { data: [] };
+  const response = await api.get(`/music/songs?ids=${ids.join(",")}`);
+  return response.data;
+};

@@ -14,7 +14,12 @@ import SearchPage from "./Pages/SearchPage";
 import ViewAll from "./Pages/ViewAll";
 import MobileSearch from "./Pages/MobileSearch";
 import MobileLibrary from "./Pages/MobileLibrary";
+import LikedSongs from "./Pages/LikedSongs";
+import MobileAlbums from "./Pages/MobileAlbums";
+import MobileSingers from "./Pages/MobileSingers";
 import MobileProfile from "./Pages/MobileProfile";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import HelpSupport from "./Pages/HelpSupport";
 import NotFound from "./Pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MusicPlayer from "./components/MusicPlayer";
@@ -57,8 +62,13 @@ function AppContent() {
               <Route path="/view-all" element={<ProtectedRoute><ViewAll /></ProtectedRoute>} />
               <Route path="/m/search" element={<ProtectedRoute><MobileSearch /></ProtectedRoute>} />
               <Route path="/m/library" element={<ProtectedRoute><MobileLibrary /></ProtectedRoute>} />
+              <Route path="/m/library/liked" element={<ProtectedRoute><LikedSongs /></ProtectedRoute>} />
+              <Route path="/m/library/albums" element={<ProtectedRoute><MobileAlbums /></ProtectedRoute>} />
+              <Route path="/m/library/singers" element={<ProtectedRoute><MobileSingers /></ProtectedRoute>} />
               <Route path="/m/profile" element={<ProtectedRoute><MobileProfile /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/help-support" element={<HelpSupport />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

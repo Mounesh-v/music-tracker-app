@@ -23,8 +23,13 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    likedSongs: [
+      {
+        type: String,
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("User", userSchema);
