@@ -8,12 +8,16 @@ import {
   Shield,
   HelpCircle,
   LogOut,
+  Heart,
+  ListMusic,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
-import { getLikedSongs } from "../Service/songApi";
+import { getLikedSongs, getUserPlaylists } from "../Service/songApi";
 
 const SETTINGS = [
+  { icon: Heart, label: "Liked Songs", route: "/m/library/liked" },
+  { icon: ListMusic, label: "My Playlists", route: "/m/library" },
   { icon: Shield, label: "Privacy", route: "/privacy" },
   { icon: HelpCircle, label: "Help & Support", route: "/help-support" },
 ];
@@ -22,17 +26,24 @@ export default function MobileProfile() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [likedCount, setLikedCount] = useState(0);
+  const [playlistCount, setPlaylistCount] = useState(0);
 
   useEffect(() => {
-    const fetchLikedCount = async () => {
+    const fetchCounts = async () => {
       try {
-        const data = await getLikedSongs();
-        setLikedCount((data.likedSongs || []).length);
+        const [likedData, playlistsData] = await Promise.all([
+          getLikedSongs(),
+          getUserPlaylists(),
+        ]);
+        setLikedCount((likedData.likedSongs || []).length);
+        setPlaylistCount((playlistsData.playlists || []).length);
       } catch (error) {
-        console.error("Error fetching liked songs:", error);
+        console.error("Error fetching profile data:", error);
       }
     };
-    fetchLikedCount();
+    fetchCounts();
+    window.addEventListener("visibilitychange", fetchCounts);
+    return () => window.removeEventListener("visibilitychange", fetchCounts);
   }, []);
 
   return (
@@ -40,15 +51,7 @@ export default function MobileProfile() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <h1 className="font-display text-2xl font-bold text-white">Profile</h1>
-        <div className="flex items-center gap-1">
-          <button className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5FD0B3]" />
-          </button>
-          <button className="p-2 rounded-xl text-[#9CA3AF] hover:text-white hover:bg-white/[0.06] transition-all">
-            <Settings className="w-5 h-5" />
-          </button>
-        </div>
+      
       </div>
 
       {/* Profile Card */}
@@ -91,6 +94,10 @@ export default function MobileProfile() {
           <div className="text-center rounded-2xl p-3 border border-white/[0.06]" style={{ background: "#11131A" }}>
             <p className="text-lg font-display font-bold text-[#5FD0B3]">{likedCount}</p>
             <p className="text-[10px] text-[#5C6370]">Liked Songs</p>
+          </div>
+          <div className="text-center rounded-2xl p-3 border border-white/[0.06]" style={{ background: "#11131A" }}>
+            <p className="text-lg font-display font-bold text-[#5FD0B3]">{playlistCount}</p>
+            <p className="text-[10px] text-[#5C6370]">Playlists</p>
           </div>
         </div>
       </div>

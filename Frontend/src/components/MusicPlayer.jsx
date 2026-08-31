@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { usePlayer } from "../Context/PlayerContext";
 import NowPlayingModal from "./NowPlayingModal";
+import AddToPlaylistModal from "./AddToPlaylistModal";
 import { likeSong, unlikeSong, getLikedSongs } from "../Service/songApi";
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, X, Volume2, ListMusic, Heart } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, X, Volume2, ListMusic, Heart, ListPlus } from "lucide-react";
 
 export default function MusicPlayer() {
   const {
@@ -24,6 +25,7 @@ export default function MusicPlayer() {
   } = usePlayer();
 
   const [showModal, setShowModal] = useState(false);
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   const [likedSongs, setLikedSongs] = useState([]);
   const volumeRef = useRef(null);
   const isDraggingVolume = useRef(false);
@@ -279,15 +281,26 @@ export default function MusicPlayer() {
               </span>
             </div>
 
-            <button className="p-2 text-[#5C6370] hover:text-white transition-colors rounded-xl hidden md:block">
-              <ListMusic className="w-4 h-4" />
-            </button>
+              <button
+                onClick={() => setShowAddToPlaylist(true)}
+                className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors rounded-xl hidden md:block"
+                aria-label="Add to playlist"
+              >
+                <ListPlus className="w-4 h-4" />
+              </button>
           </div>
         </div>
       </div>
 
       {showModal && (
         <NowPlayingModal onClose={() => setShowModal(false)} />
+      )}
+
+      {showAddToPlaylist && currentTrack && (
+        <AddToPlaylistModal
+          songId={currentTrack.id}
+          onClose={() => setShowAddToPlaylist(false)}
+        />
       )}
     </>
   );

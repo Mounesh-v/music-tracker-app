@@ -7,13 +7,11 @@ import {
   Home,
   BarChart3,
   Grid3X3,
-  Radio,
+  Headphones,
   Library,
   Heart,
-  Clock,
-  ListMusic,
   LogIn,
-  Search
+  Search,
 } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 
@@ -22,14 +20,12 @@ const drawerNavItems = [
   { to: "/search", icon: Search, label: "Search" },
   { to: "/tracks", icon: BarChart3, label: "Top Charts" },
   { to: "/songs", icon: Grid3X3, label: "Categories" },
-  { to: "/radio", icon: Radio, label: "Radio" },
-  { to: "/library", icon: Library, label: "Your Library" },
+  { to: "/devotional", icon: Headphones, label: "Devotional" },
+  { to: "/m/library", icon: Library, label: "Your Library" },
 ];
 
 const drawerLibraryItems = [
-  { icon: Heart, label: "Liked Songs" },
-  { icon: Clock, label: "Recently Played" },
-  { icon: ListMusic, label: "My Playlists" },
+  { to: "/m/library/liked", icon: Heart, label: "Liked Songs" },
 ];
 
 export default function Navbar() {
@@ -176,20 +172,27 @@ export default function Navbar() {
                 </p>
                 <div className="space-y-0.5">
                   {drawerLibraryItems.map((item) => (
-                    <button
-                      key={item.label}
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
                       onClick={handleNavClick}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#9CA3AF] hover:text-[#F0F2F5] hover:bg-white/[0.04] transition-all duration-200 w-full text-left"
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? "bg-[#5FD0B3]/10 text-[#5FD0B3]"
+                            : "text-[#9CA3AF] hover:text-[#F0F2F5] hover:bg-white/[0.04]"
+                        }`
+                      }
                     >
                       <item.icon className="w-[18px] h-[18px]" />
                       {item.label}
-                    </button>
+                    </NavLink>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div className="p-4 border-t border-white/[0.06]">
+            {/* <div className="p-4 border-t border-white/[0.06]">
               <div
                 className="relative rounded-2xl overflow-hidden p-4"
                 style={{
@@ -214,7 +217,7 @@ export default function Navbar() {
                   Explore Now
                 </button>
               </div>
-            </div>
+            </div> */}
           </nav>
         </div>
       )}

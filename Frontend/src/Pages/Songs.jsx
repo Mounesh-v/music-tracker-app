@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../Service/api";
 import SongCard from "../components/SongCard";
 import MusicFilters from "../components/MusicFilters";
@@ -12,10 +12,14 @@ export default function SongList() {
   const [language, setLanguage] = useState("All");
   const [category, setCategory] = useState("All");
 
+  useEffect(() => {
+    fetchSongs();
+  }, []);
+
   const fetchSongs = async (p = page, lang = language, cat = category) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: p, limit: 20 });
+      const params = new URLSearchParams({ page: p, limit: 30 });
       if (lang !== "All") params.set("language", lang);
       if (cat !== "All") params.set("category", cat);
 

@@ -6,11 +6,9 @@ import {
   Search,
   BarChart3,
   Grid3X3,
-  Radio,
+  Headphones,
   Library,
   Heart,
-  Clock,
-  ListMusic,
   Music,
 } from "lucide-react";
 
@@ -22,14 +20,12 @@ const navItems = [
   { to: "/search", icon: Search, label: "Search" },
   { to: "/tracks", icon: BarChart3, label: "Top Charts" },
   { to: "/songs", icon: Grid3X3, label: "Categories" },
-  { to: "/radio", icon: Radio, label: "Radio" },
+  { to: "/devotional", icon: Headphones, label: "Devotional" },
   { to: "/m/library", icon: Library, label: "Your Library" },
 ];
 
 const libraryItems = [
   { to: "/m/library/liked", icon: Heart, label: "Liked Songs" },
-  { to: "/m/library/albums", icon: ListMusic, label: "Albums" },
-  { to: "/m/library/singers", icon: Clock, label: "Singers" },
 ];
 
 const linkClass = ({ isActive }) =>
@@ -118,7 +114,7 @@ export default function DesktopSidebar() {
           </div>
         </div>
       )}
-
+{/* 
       <div className="mt-auto p-4">
         <div className="relative rounded-2xl overflow-hidden">
           <img
@@ -142,7 +138,7 @@ export default function DesktopSidebar() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 }

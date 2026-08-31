@@ -45,3 +45,38 @@ export const getSongsByIds = async (ids) => {
   const response = await api.get(`/music/songs?ids=${ids.join(",")}`);
   return response.data;
 };
+
+export const createPlaylist = async (name, description = "") => {
+  const response = await api.post("/playlists", { name, description });
+  return response.data;
+};
+
+export const getUserPlaylists = async () => {
+  const response = await api.get("/playlists");
+  return response.data;
+};
+
+export const getPlaylistById = async (id) => {
+  const response = await api.get(`/playlists/${id}`);
+  return response.data;
+};
+
+export const updatePlaylist = async (id, data) => {
+  const response = await api.put(`/playlists/${id}`, data);
+  return response.data;
+};
+
+export const deletePlaylist = async (id) => {
+  const response = await api.delete(`/playlists/${id}`);
+  return response.data;
+};
+
+export const addSongToPlaylist = async (playlistId, songId) => {
+  const response = await api.post(`/playlists/${playlistId}/songs/${songId}`);
+  return response.data;
+};
+
+export const removeSongFromPlaylist = async (playlistId, songId) => {
+  const response = await api.delete(`/playlists/${playlistId}/songs/${songId}`);
+  return response.data;
+};

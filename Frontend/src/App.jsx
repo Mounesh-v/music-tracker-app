@@ -15,9 +15,9 @@ import ViewAll from "./Pages/ViewAll";
 import MobileSearch from "./Pages/MobileSearch";
 import MobileLibrary from "./Pages/MobileLibrary";
 import LikedSongs from "./Pages/LikedSongs";
-import MobileAlbums from "./Pages/MobileAlbums";
-import MobileSingers from "./Pages/MobileSingers";
+import PlaylistDetail from "./Pages/PlaylistDetail";
 import MobileProfile from "./Pages/MobileProfile";
+import Devotional from "./Pages/Devotional";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import HelpSupport from "./Pages/HelpSupport";
 import NotFound from "./Pages/NotFound";
@@ -57,14 +57,14 @@ function AppContent() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/songs" element={<ProtectedRoute><Songs /></ProtectedRoute>} />
+              <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />
               <Route path="/tracks" element={<ProtectedRoute><Tracks /></ProtectedRoute>} />
               <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
               <Route path="/view-all" element={<ProtectedRoute><ViewAll /></ProtectedRoute>} />
               <Route path="/m/search" element={<ProtectedRoute><MobileSearch /></ProtectedRoute>} />
               <Route path="/m/library" element={<ProtectedRoute><MobileLibrary /></ProtectedRoute>} />
               <Route path="/m/library/liked" element={<ProtectedRoute><LikedSongs /></ProtectedRoute>} />
-              <Route path="/m/library/albums" element={<ProtectedRoute><MobileAlbums /></ProtectedRoute>} />
-              <Route path="/m/library/singers" element={<ProtectedRoute><MobileSingers /></ProtectedRoute>} />
+              <Route path="/m/library/playlist/:id" element={<ProtectedRoute><PlaylistDetail /></ProtectedRoute>} />
               <Route path="/m/profile" element={<ProtectedRoute><MobileProfile /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

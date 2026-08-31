@@ -1,22 +1,18 @@
 import { motion as Motion } from "framer-motion";
 import { Play, Shuffle } from "lucide-react";
-import { usePlayer } from "../Context/PlayerContext";
-
-const HERO_IMAGE = "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1400&q=80";
+import { useNavigate } from "react-router-dom";
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1400&q=80";
 
 export default function Hero() {
-  const { play } = usePlayer();
+  const navigate = useNavigate();
 
   const handlePlayNow = () => {
-    play(
-      {
-        id: "hero-1",
-        title: "Midnight Frequency",
-        artist: "VibeTune Radio",
-        image: HERO_IMAGE,
-      },
-      []
-    );
+    if (window.innerWidth >= 768) {
+      navigate("/search"); // Desktop
+    } else {
+      navigate("/m/search"); // Mobile
+    }
   };
 
   return (
@@ -50,7 +46,8 @@ export default function Hero() {
               transition={{ duration: 0.5, delay: 0.35 }}
               className="text-sm text-[#9CA3AF] leading-relaxed mb-6 max-w-md"
             >
-              Discover songs across languages, moods and genres. Your next vibe is waiting.
+              Discover songs across languages, moods and genres. Your next vibe
+              is waiting.
             </Motion.p>
 
             <Motion.div
@@ -65,13 +62,6 @@ export default function Hero() {
               >
                 <Play className="w-4 h-4" fill="currentColor" />
                 Play Now
-              </button>
-              <button
-                onClick={handlePlayNow}
-                className="flex items-center gap-2.5 px-6 py-3 rounded-2xl border border-white/[0.12] text-white text-sm font-semibold hover:bg-white/[0.06] active:scale-95 transition-all duration-150"
-              >
-                <Shuffle className="w-4 h-4" />
-                Shuffle Play
               </button>
             </Motion.div>
           </div>
@@ -137,12 +127,6 @@ export default function Hero() {
             >
               <Play className="w-3.5 h-3.5" fill="currentColor" />
               Play Now
-            </button>
-            <button
-              onClick={handlePlayNow}
-              className="flex items-center justify-center w-10 h-10 rounded-xl border border-white/[0.12] text-white hover:bg-white/[0.06] active:scale-95 transition-all duration-150"
-            >
-              <Shuffle className="w-4 h-4" />
             </button>
           </Motion.div>
         </div>

@@ -4,6 +4,7 @@ import { PROXY_AUDIO_URL } from "../Service/api";
 import { likeSong,
   unlikeSong,
   getLikedSongs, } from "../Service/songApi";
+import AddToPlaylistModal from "./AddToPlaylistModal";
 import {
   X,
   Play,
@@ -15,10 +16,12 @@ import {
   Repeat1,
   Heart,
   Download,
+  ListPlus,
 } from "lucide-react";
 
 const NowPlayingModal = ({ onClose }) => {
   const [downloading, setDownloading] = useState(false);
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 
   const [likedSongs, setLikedSongs] = useState([]);
   const {
@@ -240,6 +243,13 @@ const NowPlayingModal = ({ onClose }) => {
             <Download className="w-5 h-5" />
           </button>
           <button
+            onClick={() => setShowAddToPlaylist(true)}
+            className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors"
+            aria-label="Add to playlist"
+          >
+            <ListPlus className="w-5 h-5" />
+          </button>
+          <button
             onClick={() => handleLikeSong(song.id)}
             className={`p-2 transition-colors ${
               likedSongs.includes(song.id)
@@ -379,6 +389,13 @@ const NowPlayingModal = ({ onClose }) => {
               <Download className="w-5 h-5" />
             </button>
             <button
+              onClick={() => setShowAddToPlaylist(true)}
+              className="p-2 text-[#5C6370] hover:text-[#5FD0B3] transition-colors"
+              aria-label="Add to playlist"
+            >
+              <ListPlus className="w-5 h-5" />
+            </button>
+            <button
               onClick={() => handleLikeSong(song.id)}
               className={`p-2 transition-colors ${
                 likedSongs.includes(song.id)
@@ -395,6 +412,13 @@ const NowPlayingModal = ({ onClose }) => {
           </div>
         </div>
       </div>
+
+      {showAddToPlaylist && (
+        <AddToPlaylistModal
+          songId={song.id}
+          onClose={() => setShowAddToPlaylist(false)}
+        />
+      )}
     </div>
   );
 };

@@ -80,7 +80,7 @@ const CATEGORIES = [
       },
       {
         q: "How do I manage my library?",
-        a: "Use the Library tabs (Playlists, Albums, Singers) to browse and manage your collection. Tap any item to view its details.",
+        a: "Use the Library tabs (Liked Songs, Playlists) to browse and manage your collection. Tap any item to view its details.",
       },
     ],
   },

@@ -1,7 +1,7 @@
 import ScrollRow from "./ScrollRow";
 
 const languages = ["All", "Telugu", "Hindi", "Tamil", "Kannada", "Malayalam", "Punjabi"];
-const categories = ["All", "Trending", "Love", "Romantic", "Melody", "Party", "Workout", "Chill"];
+const categories = ["All", "Trending", "Love", "Romantic", "Melody", "Sad", "Party", "Workout", "Chill", "Classical"];
 
 export default function MusicFilters({ activeLanguage, activeCategory, onLanguageChange, onCategoryChange }) {
   return (

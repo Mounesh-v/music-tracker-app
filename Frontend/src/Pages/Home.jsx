@@ -198,24 +198,6 @@ const Home = () => {
         );
       })}
 
-      <Motion.div
-        variants={sectionFade}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
-      >
-        <Tracklist />
-      </Motion.div>
-
-      <Motion.div
-        variants={sectionFade}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-60px" }}
-      >
-        <SearchModule />
-      </Motion.div>
-
       <Footer />
     </div>
   );

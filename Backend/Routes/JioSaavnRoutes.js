@@ -9,11 +9,13 @@ import {
   getSongsByIds,
   getAlbumById,
   getArtistById,
+  getDevotionalSongs,
 } from "../Controller/JioSaavnController.js";
 
 const router = express.Router();
 
 router.get("/discover", discoverCatalog);
+router.get("/devotional", getDevotionalSongs);
 router.get("/trending", getTrendingSongs);
 router.get("/trending-by-language", getTrendingByLanguage);
 router.get("/search", searchSongs);

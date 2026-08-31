@@ -5,6 +5,7 @@ import ConnectDb from "./Config/db.js";
 import router from "./Routes/UserRoutes.js";
 import AlbumRoute from "./Routes/AlbumRoute.js";
 import jioSaavnRoutes from "./Routes/JioSaavnRoutes.js";
+import playlistRoutes from "./Routes/PlaylistRoutes.js";
 import { warmCatalog } from "./Controller/JioSaavnController.js";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use("/api/users", router);
 app.use("/api/albums", AlbumRoute);
 app.use("/api/music", jioSaavnRoutes);
+app.use("/api/playlists", playlistRoutes);
 
 warmCatalog();
 

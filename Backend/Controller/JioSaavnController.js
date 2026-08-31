@@ -174,6 +174,54 @@ const LANGUAGE_SEARCH_QUERIES = {
   punjabi: ["punjabi hits", "punjabi songs", "punjabi pop"],
 };
 
+const DEVOTIONAL_QUERIES = [
+  "devotional songs",
+  "bhajan songs",
+  "ganesh songs",
+  "krishna songs",
+  "shiva songs",
+  "lakshmi songs",
+  "hanuman songs",
+  "prayer songs",
+];
+
+let devotionalCache = { songs: [], createdAt: null };
+
+async function fetchDevotionalSongs(limit = 30) {
+  const now = Date.now();
+  if (
+    devotionalCache.songs.length > 0 &&
+    devotionalCache.createdAt &&
+    now - devotionalCache.createdAt < CACHE_TTL_MS
+  ) {
+    return devotionalCache.songs.slice(0, limit);
+  }
+
+  const seen = new Set();
+  const results = [];
+
+  for (const query of DEVOTIONAL_QUERIES) {
+    if (results.length >= limit) break;
+    try {
+      const data = await jioFetch("search.getResults", { q: query, p: 1, n: 20 });
+      const songs = data?.results || [];
+      for (const raw of songs) {
+        if (results.length >= limit) break;
+        if (!raw?.id || seen.has(raw.id)) continue;
+        seen.add(raw.id);
+        const normalized = normalizeRawSong(raw);
+        if (normalized) results.push(normalized);
+      }
+    } catch (err) {
+      console.error(`Devotional search failed (${query}):`, err.message);
+    }
+  }
+
+  devotionalCache = { songs: results, createdAt: Date.now() };
+  console.log(`Devotional songs loaded: ${results.length}`);
+  return results.slice(0, limit);
+}
+
 async function fetchLanguageSongs(language, limit = 5) {
   const lang = language.toLowerCase();
   const queries = LANGUAGE_SEARCH_QUERIES[lang] || [`${lang} songs`];
@@ -467,14 +515,89 @@ export const getTrendingSongs = async (req, res) => {
   }
 };
 
+// ── Category search queries ────────────────────────────────────────
+const CATEGORY_SEARCH_QUERIES = {
+  love: ["love songs", "romantic love", "love hits"],
+  romantic: ["romantic songs", "romantic hits", "romance songs"],
+  melody: ["melody songs", "melodious songs", "soft melody"],
+  sad: ["sad songs", "sad melody", "heartbreak songs"],
+  party: ["party songs", "party hits", "dance party"],
+  workout: ["workout songs", "gym songs", "workout motivation"],
+  chill: ["chill songs", "relaxing songs", "chill vibes"],
+  devotional: DEVOTIONAL_QUERIES,
+  classical: ["classical songs", "carnatic songs", "hindustani classical"],
+};
+
+const CATEGORY_LANG_QUERIES = {};
+for (const [cat, queries] of Object.entries(CATEGORY_SEARCH_QUERIES)) {
+  for (const lang of ["telugu", "tamil", "hindi", "kannada", "malayalam", "punjabi"]) {
+    const key = `${cat}_${lang}`;
+    CATEGORY_LANG_QUERIES[key] = queries.map((q) => `${q} ${lang}`);
+  }
+}
+
+const categoryCache = new Map();
+
+async function fetchCategorySongs(category, language = "", limit = 30) {
+  const cacheKey = `${category}_${language}`.toLowerCase();
+  const cached = categoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
+    return cached.songs.slice(0, limit);
+  }
+
+  const catLower = category.toLowerCase();
+  let queries;
+
+  if (language && language !== "All") {
+    const langLower = language.toLowerCase();
+    const key = `${catLower}_${langLower}`;
+    queries = CATEGORY_LANG_QUERIES[key] || [`${category} ${language} songs`];
+  } else {
+    queries = CATEGORY_SEARCH_QUERIES[catLower] || [`${category} songs`];
+  }
+
+  const seen = new Set();
+  const results = [];
+
+  for (const query of queries) {
+    if (results.length >= limit) break;
+    try {
+      const data = await jioFetch("search.getResults", { q: query, p: 1, n: 30 });
+      const songs = data?.results || [];
+      for (const raw of songs) {
+        if (results.length >= limit) break;
+        if (!raw?.id || seen.has(raw.id)) continue;
+
+        if (language && language !== "All") {
+          const songLang = (raw.language || "").toLowerCase();
+          if (songLang !== language.toLowerCase()) continue;
+        }
+
+        seen.add(raw.id);
+        const normalized = normalizeRawSong(raw);
+        if (normalized) results.push(normalized);
+      }
+    } catch (err) {
+      console.error(`Category search failed (${query}):`, err.message);
+    }
+  }
+
+  categoryCache.set(cacheKey, { songs: results, createdAt: Date.now() });
+  return results.slice(0, limit);
+}
+
 // ── GET /api/music/discover ────────────────────────────────────────
 export const discoverCatalog = async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 20));
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 30));
     const language = (req.query.language || "").trim();
     const category = (req.query.category || "").trim();
     const refresh = req.query.refresh === "true";
+
+    if (refresh) {
+      categoryCache.clear();
+    }
 
     // Fast path: trending
     if (category && category.toLowerCase() === "trending") {
@@ -496,12 +619,12 @@ export const discoverCatalog = async (req, res) => {
           hasNextPage: safePage < totalPages,
           hasPreviousPage: safePage > 1,
         },
-        filters: { language: "All", category },
+        filters: { language: language || "All", category },
       });
     }
 
-    // Fast path: language-specific
-    if (language && language !== "All") {
+    // Fast path: language-specific (no category)
+    if (language && language !== "All" && (!category || category === "All")) {
       const songs = await getLanguageSongs(language.toLowerCase(), refresh, 50);
       const totalSongs = songs.length;
       const totalPages = Math.max(1, Math.ceil(totalSongs / limit));
@@ -524,23 +647,40 @@ export const discoverCatalog = async (req, res) => {
       });
     }
 
-    // General catalog path
-    const allSongs = await getCatalog(refresh);
-    let filtered = allSongs;
-
+    // Category path (with or without language)
     if (category && category !== "All") {
-      filtered = filtered.filter((s) =>
-        s.category.some(
-          (c) => c.toLowerCase() === category.toLowerCase()
-        )
-      );
+      const songs = await fetchCategorySongs(category, language || "All", 80);
+      const totalSongs = songs.length;
+      const totalPages = Math.max(1, Math.ceil(totalSongs / limit));
+      const safePage = Math.min(page, totalPages);
+      const startIndex = (safePage - 1) * limit;
+      const paginatedSongs = songs.slice(startIndex, startIndex + limit);
+
+      return res.status(200).json({
+        success: true,
+        songs: paginatedSongs,
+        pagination: {
+          page: safePage,
+          limit,
+          totalSongs,
+          totalPages,
+          hasNextPage: safePage < totalPages,
+          hasPreviousPage: safePage > 1,
+        },
+        filters: {
+          language: language || "All",
+          category,
+        },
+      });
     }
 
-    const totalSongs = filtered.length;
+    // No filters: return trending as default
+    const trending = await getTrending(refresh);
+    const totalSongs = trending.length;
     const totalPages = Math.max(1, Math.ceil(totalSongs / limit));
     const safePage = Math.min(page, totalPages);
     const startIndex = (safePage - 1) * limit;
-    const paginatedSongs = filtered.slice(startIndex, startIndex + limit);
+    const paginatedSongs = trending.slice(startIndex, startIndex + limit);
 
     res.status(200).json({
       success: true,
@@ -553,10 +693,7 @@ export const discoverCatalog = async (req, res) => {
         hasNextPage: safePage < totalPages,
         hasPreviousPage: safePage > 1,
       },
-      filters: {
-        language: language || "All",
-        category: category || "All",
-      },
+      filters: { language: "All", category: "All" },
     });
   } catch (error) {
     console.error("Discover catalog error:", error.message);
@@ -569,6 +706,27 @@ export const discoverCatalog = async (req, res) => {
 };
 
 // ── Existing search endpoint ───────────────────────────────────────
+
+// ── GET /api/music/devotional ──────────────────────────────────────
+export const getDevotionalSongs = async (req, res) => {
+  try {
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 30));
+    const songs = await fetchDevotionalSongs(limit);
+
+    res.status(200).json({
+      success: true,
+      songs,
+      total: songs.length,
+    });
+  } catch (error) {
+    console.error("Devotional songs error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load devotional songs",
+      error: error.message,
+    });
+  }
+};
 export const searchSongs = async (req, res) => {
   try {
     const { q } = req.query;
