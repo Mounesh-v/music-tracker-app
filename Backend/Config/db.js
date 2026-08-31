@@ -11,7 +11,13 @@ export const ConnectDb = async () => {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.URI).then((connection) => {
+    const uri = process.env.MONGODB_URI || process.env.URI;
+    if (!uri) {
+      throw new Error("MONGODB_URI or URI environment variable is not set");
+    }
+    cached.promise = mongoose.connect(uri, {
+      bufferCommands: false,
+    }).then((connection) => {
       console.log("Connected to Database:", connection.connection.name);
       return connection;
     });
